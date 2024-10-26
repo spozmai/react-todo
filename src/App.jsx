@@ -9,10 +9,8 @@ const todoList = [
   { id: 3, title: "Prepare for presentation" },
 ];
 
-
 function App() {
   
-
   return (
     <>
       <div>
@@ -20,14 +18,9 @@ function App() {
         <ul>
         {todoList.map((todo) => (
           <li key={todo.id}>{todo.title}</li>
-        ))}
-      
+        ))}    
       </ul>
-        
       </div>
-      
-     
-     
     </>
   )
 }
