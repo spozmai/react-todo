@@ -1,15 +1,15 @@
-// /src/TodoList.jsx
 import React from 'react';
-import TodoListItem from './TodoListItem';
 
-function TodoList({ todos }) {
-    return (
-        <ul>
-            {todos.map((todo) => (
-                <TodoListItem key={todo.id} todo={todo} />
-            ))}
-        </ul>
-    );
+function TodoList({ todoList }) {
+  return (
+    <ul>
+      {todoList.length > 0 ? (
+        todoList.map((todo) => <li key={todo.id}>{todo.title}</li>)
+      ) : (
+        <li>No todos available</li>
+      )}
+    </ul>
+  );
 }
 
 export default TodoList;
