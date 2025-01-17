@@ -1,52 +1,97 @@
 import React, { useState, useEffect } from "react";
-import TodoList from "./TodoList";
-import AddTodoForm from "./AddTodoForm";
+import AddTodo from "./AddTodo";
 
-function App() {
-  const [todoList, setTodoList] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+const App = () => {
+  const [todoList, setTodoList] = useState([]); // Stores todos
+  const [isLoading, setIsLoading] = useState(true); // Loading state
 
-  useEffect(() => {
-    const fetchData = new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          data: {
-            todoList: [
-              { id: 1, title: "Learn React" },
-              { id: 2, title: "Build a Todo App" },
-            ],
+  // Fetch Todos from Airtable
+  const fetchData = async () => {
+    try {
+      const url = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
+      const options = {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_AIRTABLE_API_TOKEN}`,
+        },
+      };
+
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`Error fetching todos: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Transform data into the format we need
+      const todos = data.records.map((todo) => ({
+        id: todo.id,
+        title: todo.fields.title,
+      }));
+
+      setTodoList(todos); // Update state with todos
+    } catch (error) {
+      console.error("Error fetching todos:", error.message);
+    } finally {
+      setIsLoading(false); // Stop loading spinner
+    }
+  };
+
+  // Add a new Todo to Airtable
+  const postTodo = async (title) => {
+    try {
+      const airtableData = {
+        fields: { title },
+      };
+
+      const response = await fetch(
+        `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_AIRTABLE_API_TOKEN}`,
           },
-        });
-      }, 2000);
-    });
+          body: JSON.stringify(airtableData),
+        }
+      );
 
-    fetchData.then((result) => {
-      setTodoList(result.data.todoList);
-      setIsLoading(false);
-    });
+      if (!response.ok) {
+        throw new Error(`Error adding todo: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Add the new todo to the state
+      setTodoList((prev) => [
+        ...prev,
+        { id: data.id, title: data.fields.title },
+      ]);
+    } catch (error) {
+      console.error("Error adding todo:", error.message);
+    }
+  };
+
+  // Fetch Todos when the component mounts
+  useEffect(() => {
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem("todoList", JSON.stringify(todoList));
-    }
-  }, [todoList, isLoading]);
-
-  const addTodo = (newTodo) => {
-    setTodoList((prevTodos) => [...prevTodos, newTodo]);
-  };
-
-  const removeTodo = (id) => {
-    setTodoList((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
-  };
-
   return (
-    <>
+    <div>
       <h1>Todo List</h1>
-      {isLoading ? <p>Loading...</p> : <TodoList todoList={todoList} onRemoveTodo={removeTodo} />}
-      <AddTodoForm onAddTodo={addTodo} />
-    </>
+      <AddTodo onAddTodo={postTodo} />
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <ul>
+          {todoList.map((todo) => (
+            <li key={todo.id}>{todo.title}</li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
-}
+};
 
 export default App;
