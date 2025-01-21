@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AddTodo from "./AddTodo";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 const App = () => {
   const [todoList, setTodoList] = useState([]); // Stores todos
@@ -78,19 +79,38 @@ const App = () => {
   }, []);
 
   return (
-    <div>
-      <h1>Todo List</h1>
-      <AddTodo onAddTodo={postTodo} />
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <ul>
-          {todoList.map((todo) => (
-            <li key={todo.id}>{todo.title}</li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Route for the root path */}
+        <Route
+          path="/"
+          element={
+            <div>
+              <h1>Todo List</h1>
+              <AddTodo onAddTodo={postTodo} />
+              {isLoading ? (
+                <p>Loading...</p>
+              ) : (
+                <ul>
+                  {todoList.map((todo) => (
+                    <li key={todo.id}>{todo.title}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          }
+        />
+        {/* New route for "/new" */}
+        <Route
+          path="/new"
+          element={
+            <div>
+              <h1>New Todo List</h1>
+            </div>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
