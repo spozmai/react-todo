@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AddTodo from "./AddTodo";
+import "./styles/global.css";
 
 const App = () => {
   const [todoList, setTodoList] = useState([]); // Stores todos
@@ -72,6 +73,30 @@ const App = () => {
     }
   };
 
+  // Remove a Todo from Airtable and State
+  const deleteTodo = async (id) => {
+    try {
+      const response = await fetch(
+        `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_AIRTABLE_API_TOKEN}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error deleting todo: ${response.status}`);
+      }
+
+      // Remove the deleted todo from state
+      setTodoList((prev) => prev.filter((todo) => todo.id !== id));
+    } catch (error) {
+      console.error("Error deleting todo:", error.message);
+    }
+  };
+
   // Fetch Todos when the component mounts
   useEffect(() => {
     fetchData();
@@ -86,7 +111,15 @@ const App = () => {
       ) : (
         <ul>
           {todoList.map((todo) => (
-            <li key={todo.id}>{todo.title}</li>
+            <li key={todo.id}>
+              {todo.title}
+              <button
+                className="delete-button"
+                onClick={() => deleteTodo(todo.id)}
+              >
+                Remove
+              </button>
+            </li>
           ))}
         </ul>
       )}
