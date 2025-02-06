@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';  // Import PropTypes
 import InputWithLabel from './InputWithLabel';
 
 function AddTodoForm({ onAddTodo }) {
@@ -30,5 +31,9 @@ function AddTodoForm({ onAddTodo }) {
     </form>
   );
 }
+
+AddTodoForm.propTypes = {
+  onAddTodo: PropTypes.func.isRequired,  
+};
 
 export default AddTodoForm;
