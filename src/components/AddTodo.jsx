@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./styles/global.css"; // Import your global styles
+import "../styles/global.css"; 
 
 const AddTodo = ({ onAddTodo }) => {
   const [newTodo, setNewTodo] = useState("");
@@ -8,7 +8,7 @@ const AddTodo = ({ onAddTodo }) => {
     e.preventDefault();
     if (newTodo.trim()) {
       onAddTodo(newTodo.trim());
-      setNewTodo(""); // Clear the input field
+      setNewTodo(""); 
     }
   };
 
