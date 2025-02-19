@@ -5,7 +5,7 @@ import "./styles/global.css";
 const App = () => {
   const [todoList, setTodoList] = useState([]); 
   const [isLoading, setIsLoading] = useState(true); 
-
+  const [sortOrder, setSortOrder] = useState("asc"); 
   const fetchData = async () => {
     try {
       const url = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
@@ -22,20 +22,24 @@ const App = () => {
       }
 
       const data = await response.json();
+      const sortedData = data.records
+        .map((todo) => ({
+          id: todo.id,
+          title: todo.fields.title,
+        }))
+        .sort((a, b) =>
+          sortOrder === "asc"
+            ? a.title.localeCompare(b.title) 
+            : b.title.localeCompare(a.title) 
+        );
 
-      const todos = data.records.map((todo) => ({
-        id: todo.id,
-        title: todo.fields.title,
-      }));
-
-      setTodoList(todos); 
+      setTodoList(sortedData); 
     } catch (error) {
       console.error("Error fetching todos:", error.message);
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
-
 
   const postTodo = async (title) => {
     try {
@@ -61,10 +65,14 @@ const App = () => {
 
       const data = await response.json();
 
-      setTodoList((prev) => [
-        ...prev,
-        { id: data.id, title: data.fields.title },
-      ]);
+      setTodoList((prev) => {
+        const newTodos = [...prev, { id: data.id, title: data.fields.title }];
+        return newTodos.sort((a, b) =>
+          sortOrder === "asc"
+            ? a.title.localeCompare(b.title) 
+            : b.title.localeCompare(a.title) 
+        );
+      });
     } catch (error) {
       console.error("Error adding todo:", error.message);
     }
@@ -86,22 +94,29 @@ const App = () => {
         throw new Error(`Error deleting todo: ${response.status}`);
       }
 
-    
       setTodoList((prev) => prev.filter((todo) => todo.id !== id));
     } catch (error) {
       console.error("Error deleting todo:", error.message);
     }
   };
 
- 
+  const toggleSortOrder = () => {
+    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+  };
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [sortOrder]);
 
   return (
     <div>
       <h1>Todo List</h1>
       <AddTodo onAddTodo={postTodo} />
+      <button 
+      className="A-Z"
+       onClick={toggleSortOrder}>
+        Sort {sortOrder === "asc" ? "Z-A" : "A-Z"}
+      </button>
       {isLoading ? (
         <p>Loading...</p>
       ) : (
